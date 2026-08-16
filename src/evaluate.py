@@ -15,7 +15,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import cross_val_predict, cross_validate
 
-from models import predict_proba
+from .models import predict_proba
 
 warnings.filterwarnings("ignore")
 
