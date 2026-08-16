@@ -1,0 +1,69 @@
+# Credit Risk Intelligence System Configuration
+# Home Credit Default Risk dataset version
+
+# Data paths
+raw_path: "data/processed/application_train_clean.csv"
+processed_dir: "data/processed"
+
+# Target
+target: "TARGET"
+
+# Split (no true temporal ordering in Home Credit data - all dates relative to application)
+# Using stratified random split + cross-validation
+test_size: 0.2
+cv_folds: 3
+cv_sample_size: 50000
+random_state: 42
+
+# Forbidden columns (post-decision fields that would leak)
+# None in application_train_dated - all features are available at application time
+forbidden_columns: []
+
+# Feature engineering
+n_bins: 10
+min_bin_size: 0.05
+
+# Feature selection
+iv_min: 0.02
+iv_max: 2.0
+correlation_threshold: 0.8
+vif_threshold: 10
+
+# Modeling
+random_state: 42
+logreg_c: 1.0
+logreg_max_iter: 1000
+rf_n_estimators: 50
+rf_max_depth: 8
+xgb_n_estimators: 50
+xgb_max_depth: 4
+xgb_learning_rate: 0.1
+xgb_subsample: 0.8
+xgb_colsample_bytree: 0.8
+
+# Evaluation
+psi_buckets: 10
+calibration_bins: 10
+
+# Explainability
+generate_shap: false
+
+# Decision thresholds (configurable policy)
+low_threshold: 0.10
+high_threshold: 0.30
+
+# Expected loss (optional - set if EAD/LGD data available)
+use_expected_loss: false
+ead_default: 10000
+lgd_default: 0.45
+
+# Monitoring
+psi_stable_threshold: 0.10
+psi_moderate_threshold: 0.25
+
+# Output
+artifacts_dir: "artifacts"
+model_card_path: "artifacts/model_card.md"
+metrics_report_path: "artifacts/metrics_report.json"
+decision_thresholds_path: "artifacts/decision_thresholds.csv"
+psi_report_path: "artifacts/monitoring/psi_report.json"

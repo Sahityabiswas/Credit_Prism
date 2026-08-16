@@ -1,0 +1,61 @@
+# Data
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Artifacts
+artifacts/*
+!artifacts/.gitkeep
+!artifacts/monitoring/.gitkeep
+!artifacts/shap_plots/.gitkeep
+
+# Models
+*.pkl
+*.joblib
+
+# Environment
+.env
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# Build
+dist/
+build/
+*.egg-info/
+.pip/
+
+# Notebooks
+notebooks/.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Generated files
+PROJECT_SUMMARY.pdf
+gen_pdf.py
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "pip"
+    commit-message:
+      prefix: "deps:"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "pytest*"
+          - "ruff*"
+          - "pre-commit*"
+          - "black*"
+      main-dependencies:
+        patterns:
+          - "pandas"
+          - "numpy"
+          - "scikit-learn"
+          - "xgboost"
+          - "shap"
+          - "scipy"
+          - "pyyaml"
+          - "streamlit"
+          - "matplotlib"
+          - "seaborn"
+          - "joblib"
+          - "datasets"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
