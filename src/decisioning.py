@@ -1,8 +1,9 @@
 """Credit decisioning: risk bands, threshold optimization, decision metrics."""
 
-import pandas as pd
+
 import numpy as np
-from typing import Dict, List, Tuple, Optional
+import pandas as pd
+
 from src.evaluate import evaluate_at_thresholds
 
 
@@ -27,7 +28,7 @@ def decision_metrics(
     pd_scores: np.ndarray,
     low_threshold: float = 0.10,
     high_threshold: float = 0.30
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Calculate decision-layer metrics for a three-band policy.
     
@@ -84,7 +85,7 @@ def decision_metrics(
 def threshold_analysis(
     y_true: np.ndarray,
     pd_scores: np.ndarray,
-    thresholds: Optional[List[float]] = None
+    thresholds: list[float] | None = None
 ) -> pd.DataFrame:
     """
     Generate threshold analysis table showing approval rate vs risk trade-off.
@@ -107,8 +108,8 @@ def find_optimal_threshold(
     objective: str = "min_bad_rate",
     min_approval: float = 0.0,
     max_bad_rate: float = 1.0,
-    thresholds: Optional[List[float]] = None
-) -> Dict:
+    thresholds: list[float] | None = None
+) -> dict:
     """
     Find threshold optimizing a business objective.
     
@@ -180,7 +181,7 @@ def segment_analysis(
         try:
             from sklearn.metrics import roc_auc_score
             metrics["auc"] = roc_auc_score(group["y_true"], group["pd"])
-        except:
+        except Exception:
             pass
         
         rows.append(metrics)

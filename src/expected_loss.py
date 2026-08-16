@@ -1,15 +1,15 @@
 """Expected Loss calculation: PD × EAD × LGD."""
 
-import pandas as pd
+
 import numpy as np
-from typing import Dict, Optional, Union
+import pandas as pd
 
 
 def expected_loss(
-    pd: Union[float, np.ndarray, pd.Series],
-    ead: Union[float, np.ndarray, pd.Series],
-    lgd: Union[float, np.ndarray, pd.Series]
-) -> Union[float, np.ndarray]:
+    pd: float | np.ndarray | pd.Series,
+    ead: float | np.ndarray | pd.Series,
+    lgd: float | np.ndarray | pd.Series
+) -> float | np.ndarray:
     """
     Calculate Expected Loss = PD × EAD × LGD.
     
@@ -89,7 +89,7 @@ def el_with_assumptions(
     pd_scores: np.ndarray,
     ead_default: float = 10000,
     lgd_default: float = 0.45
-) -> Dict:
+) -> dict:
     """
     Calculate EL with explicit assumptions.
     

@@ -1,9 +1,11 @@
 """Tests for Home Credit data ingestion."""
 
-import pytest
-import pandas as pd
-import sys
 import os
+import sys
+
+import pandas as pd
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from data_ingestion import clean_application_train

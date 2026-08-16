@@ -1,14 +1,14 @@
 """Data loading, cleaning, time-based splitting, and leakage checks."""
 
-import pandas as pd
+
 import numpy as np
-from typing import Tuple, List, Optional
+import pandas as pd
 import yaml
 
 
 def load_config(config_path: str = "config.yaml") -> dict:
     """Load configuration from YAML file."""
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         return yaml.safe_load(f)
 
 
@@ -17,7 +17,7 @@ def load_data(path: str) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-def check_for_leakage(df: pd.DataFrame, forbidden_columns: List[str]) -> None:
+def check_for_leakage(df: pd.DataFrame, forbidden_columns: list[str]) -> None:
     """Fail loudly if any forbidden (post-decision) columns are present."""
     found = [col for col in forbidden_columns if col in df.columns]
     if found:
@@ -44,12 +44,9 @@ def check_target_values(df: pd.DataFrame, target: str) -> None:
         raise ValueError(f"Target contains unexpected values: {unique_vals - expected}")
 
 
-def check_duplicate_records(df: pd.DataFrame, id_column: Optional[str] = None) -> dict:
+def check_duplicate_records(df: pd.DataFrame, id_column: str | None = None) -> dict:
     """Check for duplicate records. Returns dict with count and issues."""
-    if id_column and id_column in df.columns:
-        dupes = df.duplicated(subset=[id_column]).sum()
-    else:
-        dupes = df.duplicated().sum()
+    dupes = df.duplicated(subset=[id_column]).sum() if id_column and id_column in df.columns else df.duplicated().sum()
     return {
         "count": int(dupes),
         "passed": dupes == 0,
@@ -98,8 +95,8 @@ def time_based_split(
     df: pd.DataFrame,
     date_column: str,
     split_date: str,
-    oot_start_date: Optional[str] = None
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    oot_start_date: str | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Split data chronologically into train, test, and OOT sets.
     
@@ -132,9 +129,9 @@ def time_based_split(
 
 def impute_missing(
     df: pd.DataFrame,
-    imputer: Optional[dict] = None,
+    imputer: dict | None = None,
     fit: bool = False
-) -> Tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, dict]:
     """
     Impute missing values. Fit on train, apply same to test/OOT.
     
@@ -162,7 +159,7 @@ def impute_missing(
     return df, imputer
 
 
-def prepare_data(config: dict) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+def prepare_data(config: dict) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     """Full data preparation pipeline."""
     raw_df = load_data(config["raw_path"])
     

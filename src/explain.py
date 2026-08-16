@@ -1,20 +1,24 @@
 """SHAP explainability wrapper for global and local explanations."""
 
-import pandas as pd
-import numpy as np
-from typing import List, Optional, Dict, Any
-import shap
+from typing import Any
+
 import matplotlib
+import numpy as np
+import pandas as pd
+import shap
+
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import warnings
+
+import matplotlib.pyplot as plt
+
 warnings.filterwarnings("ignore")
 
 
 def generate_shap_explanations(
     model: Any,
     X: pd.DataFrame,
-    sample_size: Optional[int] = None
+    sample_size: int | None = None
 ) -> shap.Explanation:
     """
     Generate SHAP values for model explanations.
@@ -23,10 +27,7 @@ def generate_shap_explanations(
     falls back to KernelExplainer (slower).
     """
     # Sample for speed if needed
-    if sample_size and len(X) > sample_size:
-        X_sample = X.sample(n=sample_size, random_state=42)
-    else:
-        X_sample = X
+    X_sample = X.sample(n=sample_size, random_state=42) if sample_size and len(X) > sample_size else X
     
     # Try to use appropriate explainer
     try:
@@ -34,9 +35,7 @@ def generate_shap_explanations(
         if hasattr(model, "estimators_") or hasattr(model, "base_estimator_"):
             # Get base estimator if calibrated
             base = getattr(model, "base_estimator_", model)
-            if hasattr(base, "estimators_"):  # RF
-                explainer = shap.TreeExplainer(base)
-            elif hasattr(base, "feature_importances_"):  # XGB
+            if hasattr(base, "estimators_") or hasattr(base, "feature_importances_"):  # RF
                 explainer = shap.TreeExplainer(base)
             else:
                 raise ValueError("Unknown tree model")
@@ -96,8 +95,8 @@ def save_shap_bar_plot(
 def pick_diverse_examples(
     shap_values: shap.Explanation,
     n: int = 3,
-    y_pred: Optional[np.ndarray] = None
-) -> List[int]:
+    y_pred: np.ndarray | None = None
+) -> list[int]:
     """
     Pick diverse examples for local explanations.
     
@@ -135,9 +134,9 @@ def save_local_shap_examples(
     shap_values: shap.Explanation,
     output_dir: str = "artifacts/shap_plots",
     n: int = 3,
-    y_pred: Optional[np.ndarray] = None,
-    feature_names: Optional[List[str]] = None
-) -> List[str]:
+    y_pred: np.ndarray | None = None,
+    feature_names: list[str] | None = None
+) -> list[str]:
     """
     Save local SHAP waterfall plots for diverse examples.
     
@@ -188,7 +187,7 @@ def save_local_shap_examples(
 def compare_shap_with_logreg(
     shap_values: shap.Explanation,
     logreg_model: Any,
-    feature_names: List[str],
+    feature_names: list[str],
     top_k: int = 10
 ) -> pd.DataFrame:
     """
@@ -237,10 +236,10 @@ def compare_shap_with_logreg(
 
 def shap_dependence_plots(
     shap_values: shap.Explanation,
-    features: List[str],
+    features: list[str],
     output_dir: str = "artifacts/shap_plots",
     interaction_index: str = "auto"
-) -> List[str]:
+) -> list[str]:
     """Generate SHAP dependence plots for top features."""
     import os
     os.makedirs(output_dir, exist_ok=True)

@@ -1,11 +1,12 @@
 """Data quality validation checks."""
 
-import pandas as pd
+from typing import Any
+
 import numpy as np
-from typing import Dict, List, Any
+import pandas as pd
 
 
-def check_schema(df: pd.DataFrame, target: str, date_column: str) -> Dict[str, Any]:
+def check_schema(df: pd.DataFrame, target: str, date_column: str) -> dict[str, Any]:
     """Validate basic schema expectations."""
     issues = []
     if target not in df.columns:
@@ -19,7 +20,7 @@ def check_schema(df: pd.DataFrame, target: str, date_column: str) -> Dict[str, A
     return {"check": "schema", "passed": len(issues) == 0, "issues": issues}
 
 
-def check_target_values(df: pd.DataFrame, target: str) -> Dict[str, Any]:
+def check_target_values(df: pd.DataFrame, target: str) -> dict[str, Any]:
     """Ensure target contains only 0 and 1."""
     issues = []
     if target in df.columns:
@@ -31,12 +32,9 @@ def check_target_values(df: pd.DataFrame, target: str) -> Dict[str, Any]:
     return {"check": "target_values", "passed": len(issues) == 0, "issues": issues}
 
 
-def check_duplicate_records(df: pd.DataFrame, id_column: str = None) -> Dict[str, Any]:
+def check_duplicate_records(df: pd.DataFrame, id_column: str = None) -> dict[str, Any]:
     """Check for duplicate records."""
-    if id_column and id_column in df.columns:
-        dupes = df.duplicated(subset=[id_column]).sum()
-    else:
-        dupes = df.duplicated().sum()
+    dupes = df.duplicated(subset=[id_column]).sum() if id_column and id_column in df.columns else df.duplicated().sum()
     return {
         "check": "duplicates",
         "passed": dupes == 0,
@@ -45,7 +43,7 @@ def check_duplicate_records(df: pd.DataFrame, id_column: str = None) -> Dict[str
     }
 
 
-def check_missingness(df: pd.DataFrame, threshold: float = 0.5) -> Dict[str, Any]:
+def check_missingness(df: pd.DataFrame, threshold: float = 0.5) -> dict[str, Any]:
     """Report missing value rates per column."""
     missing = df.isna().mean()
     high_missing = missing[missing > threshold]
@@ -60,7 +58,7 @@ def check_missingness(df: pd.DataFrame, threshold: float = 0.5) -> Dict[str, Any
     }
 
 
-def check_numeric_ranges(df: pd.DataFrame) -> Dict[str, Any]:
+def check_numeric_ranges(df: pd.DataFrame) -> dict[str, Any]:
     """Check for impossible numeric values."""
     issues = []
     numeric_cols = df.select_dtypes(include=[np.number]).columns
@@ -70,7 +68,7 @@ def check_numeric_ranges(df: pd.DataFrame) -> Dict[str, Any]:
     return {"check": "numeric_ranges", "passed": len(issues) == 0, "issues": issues}
 
 
-def check_categorical_values(df: pd.DataFrame) -> Dict[str, Any]:
+def check_categorical_values(df: pd.DataFrame) -> dict[str, Any]:
     """Check categorical columns for unexpected values."""
     issues = []
     cat_cols = df.select_dtypes(include=["object", "category"]).columns
@@ -81,7 +79,7 @@ def check_categorical_values(df: pd.DataFrame) -> Dict[str, Any]:
     return {"check": "categorical_values", "passed": len(issues) == 0, "issues": issues}
 
 
-def check_date_order(df: pd.DataFrame, date_column: str) -> Dict[str, Any]:
+def check_date_order(df: pd.DataFrame, date_column: str) -> dict[str, Any]:
     """Validate dates are valid and ordered."""
     issues = []
     if date_column in df.columns:
@@ -94,7 +92,7 @@ def check_date_order(df: pd.DataFrame, date_column: str) -> Dict[str, Any]:
     return {"check": "date_order", "passed": len(issues) == 0, "issues": issues}
 
 
-def check_for_leakage(df: pd.DataFrame, forbidden_columns: List[str]) -> Dict[str, Any]:
+def check_for_leakage(df: pd.DataFrame, forbidden_columns: list[str]) -> dict[str, Any]:
     """Check for forbidden (post-decision) columns."""
     found = [col for col in forbidden_columns if col in df.columns]
     return {
@@ -110,7 +108,7 @@ def check_period_overlap(
     test_df: pd.DataFrame,
     oot_df: pd.DataFrame,
     date_column: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Check that train/test/OOT periods don't overlap."""
     issues = []
     train_max = pd.to_datetime(train_df[date_column]).max()
@@ -134,7 +132,7 @@ def run_all_checks(
     train_df: pd.DataFrame = None,
     test_df: pd.DataFrame = None,
     oot_df: pd.DataFrame = None
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Run all validation checks and return results."""
     results = []
     

@@ -1,15 +1,20 @@
 """Tests for IV calculation and feature selection."""
 
-import pytest
-import pandas as pd
-import numpy as np
-import sys
 import os
+import sys
+
+import numpy as np
+import pandas as pd
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from feature_selection import (
-    calculate_iv, select_by_iv, prune_by_correlation,
-    calculate_vif, prune_by_vif, select_features
+    calculate_iv,
+    calculate_vif,
+    prune_by_correlation,
+    prune_by_vif,
+    select_by_iv,
 )
 
 

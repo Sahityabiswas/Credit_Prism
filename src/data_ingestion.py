@@ -1,8 +1,8 @@
 """Data ingestion for Home Credit Default Risk dataset."""
 
 import os
+
 import pandas as pd
-from typing import Optional
 
 
 def load_application_train() -> pd.DataFrame:

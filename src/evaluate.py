@@ -1,19 +1,23 @@
 """Model evaluation: AUC, PR-AUC, F1, Gini, KS, Brier, calibration, reliability curves."""
 
-import pandas as pd
+import warnings
+from collections.abc import Callable
+
 import numpy as np
-from typing import Dict, List, Tuple, Optional, Callable
+import pandas as pd
+from scipy import stats
 from sklearn.metrics import (
-    roc_auc_score, average_precision_score, f1_score,
-    brier_score_loss, precision_recall_curve, roc_curve
+    average_precision_score,
+    brier_score_loss,
+    f1_score,
+    roc_auc_score,
+    roc_curve,
 )
 from sklearn.model_selection import cross_val_predict, cross_validate
-from scipy import stats
-import warnings
-warnings.filterwarnings("ignore")
 
-# Import predict_proba from models
 from models import predict_proba
+
+warnings.filterwarnings("ignore")
 
 
 def gini_from_auc(auc: float) -> float:
@@ -31,7 +35,7 @@ def calculate_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     threshold: float = 0.5
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Calculate all standard metrics."""
     return {
         "auc": roc_auc_score(y_true, y_pred),
@@ -47,7 +51,7 @@ def reliability_curve(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     n_bins: int = 10
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute reliability curve (calibration curve).
     
@@ -77,7 +81,7 @@ def calibration_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     n_bins: int = 10
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Calculate calibration-specific metrics."""
     bin_centers, bin_accuracies, bin_counts = reliability_curve(y_true, y_pred, n_bins)
     
@@ -90,8 +94,8 @@ def calibration_metrics(
     # Calibration slope and intercept (logistic calibration)
     # Fit: logit(observed) = a + b * logit(predicted)
     eps = 1e-6
-    logit_pred = np.log((y_pred + eps) / (1 - y_pred + eps))
-    logit_obs = np.log((y_true + eps) / (1 - y_true + eps))
+    np.log((y_pred + eps) / (1 - y_pred + eps))
+    np.log((y_true + eps) / (1 - y_true + eps))
     
     # Use binned values for stability
     logit_bin_pred = np.log((bin_centers + eps) / (1 - bin_centers + eps))
@@ -118,7 +122,7 @@ def evaluate_all(
     y_pred: np.ndarray,
     threshold: float = 0.5,
     n_bins: int = 10
-) -> Dict[str, any]:
+) -> dict[str, any]:
     """Comprehensive evaluation including discrimination and calibration."""
     metrics = calculate_metrics(y_true, y_pred, threshold)
     cal_metrics = calibration_metrics(y_true, y_pred, n_bins)
@@ -129,7 +133,7 @@ def evaluate_all(
 def evaluate_at_thresholds(
     y_true: np.ndarray,
     y_pred: np.ndarray,
-    thresholds: List[float]
+    thresholds: list[float]
 ) -> pd.DataFrame:
     """Evaluate metrics at multiple decision thresholds."""
     rows = []
@@ -160,7 +164,7 @@ def evaluate_at_thresholds(
 
 def compare_models(
     y_true: np.ndarray,
-    predictions: Dict[str, np.ndarray]
+    predictions: dict[str, np.ndarray]
 ) -> pd.DataFrame:
     """Compare multiple models on test set."""
     rows = []
@@ -171,7 +175,7 @@ def compare_models(
     return pd.DataFrame(rows)
 
 
-def print_calibration_table(metrics: Dict) -> None:
+def print_calibration_table(metrics: dict) -> None:
     """Print calibration table: Predicted PD bucket vs Observed default rate."""
     centers = metrics.get("bin_centers", [])
     accuracies = metrics.get("bin_accuracies", [])
@@ -183,7 +187,7 @@ def print_calibration_table(metrics: Dict) -> None:
     print("\nCalibration Table:")
     print(f"{'Predicted PD Bucket':<25} {'Observed Default Rate':<25} {'Count':>10}")
     print("-" * 60)
-    for c, a, n in zip(centers, accuracies, counts):
+    for c, a, n in zip(centers, accuracies, counts, strict=False):
         print(f"{c:.2%}{'':<15} {a:.2%}{'':<15} {n:>10}")
 
 
@@ -193,7 +197,7 @@ def evaluate_cv(
     y: pd.Series,
     cv,
     n_bins: int = 10
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Evaluate model using cross-validation.
     
@@ -201,8 +205,6 @@ def evaluate_cv(
     """
     # Get out-of-fold predictions
     # Need to wrap model_builder to work with cross_val_predict
-    from sklearn.base import BaseEstimator
-    from sklearn.pipeline import Pipeline
     
     # Build a fresh model for CV
     model = model_builder(X, y)
@@ -215,7 +217,7 @@ def evaluate_cv(
         y_pred_oof = np.zeros(len(y))
         for train_idx, val_idx in cv.split(X, y):
             X_fold_train, X_fold_val = X.iloc[train_idx], X.iloc[val_idx]
-            y_fold_train, y_fold_val = y.iloc[train_idx], y.iloc[val_idx]
+            y_fold_train, _y_fold_val = y.iloc[train_idx], y.iloc[val_idx]
             fold_model = model_builder(X_fold_train, y_fold_train)
             y_pred_oof[val_idx] = predict_proba(fold_model, X_fold_val)
     
@@ -223,7 +225,6 @@ def evaluate_cv(
     metrics = evaluate_all(y.values, y_pred_oof, n_bins=n_bins)
     
     # Also compute per-fold AUC for std
-    from sklearn.model_selection import cross_validate
     try:
         cv_results = cross_validate(model, X, y, cv=cv, scoring="roc_auc", return_train_score=False)
         auc_mean = cv_results["test_score"].mean()

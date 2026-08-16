@@ -1,13 +1,14 @@
 """Model training and prediction wrappers for LogReg, Random Forest, and XGBoost."""
 
-import pandas as pd
-import numpy as np
-from typing import Dict, Any, Tuple, Optional
+from typing import Any
+
 import joblib
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.calibration import CalibratedClassifierCV
+import numpy as np
+import pandas as pd
 import xgboost as xgb
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 
 def build_logreg(
@@ -103,7 +104,7 @@ def train_all_models(
     X_train: pd.DataFrame,
     y_train: pd.Series,
     config: dict
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Train all three candidate models."""
     models = {}
     

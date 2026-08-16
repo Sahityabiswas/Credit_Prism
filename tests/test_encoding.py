@@ -1,10 +1,12 @@
 """Tests for WOE encoder."""
 
-import pytest
-import pandas as pd
-import numpy as np
-import sys
 import os
+import sys
+
+import numpy as np
+import pandas as pd
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from encoding import WOEEncoder, fit_woe_encoder
@@ -24,7 +26,7 @@ def test_woe_known_values():
     encoder.fit(df, ["feature"], "target")
     
     # Transform and check
-    transformed = encoder.transform(df[["feature"]])
+    encoder.transform(df[["feature"]])
     
     # Check WOE values (approximately)
     woe_map = encoder.get_woe_map("feature")
@@ -100,7 +102,6 @@ def test_fit_woe_encoder_convenience():
 def test_woe_save_load():
     """Encoder can be saved and loaded."""
     import tempfile
-    import json
     
     df = pd.DataFrame({
         "feature": ["A", "B"] * 50,

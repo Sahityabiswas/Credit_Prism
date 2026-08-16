@@ -1,9 +1,9 @@
 """WOE (Weight of Evidence) Encoder — built from scratch for transparency."""
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Union
 import json
+
+import numpy as np
+import pandas as pd
 
 
 class WOEEncoder:
@@ -26,9 +26,9 @@ class WOEEncoder:
         self.handle_unknown = handle_unknown  # "ignore" or "error"
         self.random_state = random_state
         
-        self.woe_maps_: Dict[str, Dict] = {}
-        self.bin_edges_: Dict[str, np.ndarray] = {}
-        self.feature_types_: Dict[str, str] = {}  # "numeric" or "categorical"
+        self.woe_maps_: dict[str, dict] = {}
+        self.bin_edges_: dict[str, np.ndarray] = {}
+        self.feature_types_: dict[str, str] = {}  # "numeric" or "categorical"
         self.global_good_: int = 0
         self.global_bad_: int = 0
         self.is_fitted_ = False
@@ -88,7 +88,7 @@ class WOEEncoder:
         bad_pct = (bad_count + eps) / (self.global_bad_ + eps)
         return np.log(good_pct / bad_pct)
     
-    def fit(self, df: pd.DataFrame, feature_cols: List[str], target_col: str) -> "WOEEncoder":
+    def fit(self, df: pd.DataFrame, feature_cols: list[str], target_col: str) -> "WOEEncoder":
         """
         Fit WOE encoder on training data.
         
@@ -161,7 +161,7 @@ class WOEEncoder:
                 binned_str = series.astype(str)
             
             # Map to WOE, handle unseen
-            def map_woe(val):
+            def map_woe(val, woe_map=woe_map, feature=feature):
                 if val in woe_map:
                     return woe_map[val]
                 elif self.handle_unknown == "error":
@@ -173,11 +173,11 @@ class WOEEncoder:
         
         return df
     
-    def fit_transform(self, df: pd.DataFrame, feature_cols: List[str], target_col: str) -> pd.DataFrame:
+    def fit_transform(self, df: pd.DataFrame, feature_cols: list[str], target_col: str) -> pd.DataFrame:
         """Fit and transform in one step."""
         return self.fit(df, feature_cols, target_col).transform(df)
     
-    def get_woe_map(self, feature: str) -> Dict:
+    def get_woe_map(self, feature: str) -> dict:
         """Get WOE mapping for a feature (for inspection)."""
         return self.woe_maps_.get(feature, {})
     
@@ -201,7 +201,7 @@ class WOEEncoder:
     @classmethod
     def load(cls, path: str) -> "WOEEncoder":
         """Load encoder from JSON."""
-        with open(path, "r") as f:
+        with open(path) as f:
             data = json.load(f)
         
         encoder = cls(
@@ -222,7 +222,7 @@ class WOEEncoder:
 def fit_woe_encoder(
     df: pd.DataFrame,
     target: str,
-    feature_cols: Optional[List[str]] = None,
+    feature_cols: list[str] | None = None,
     n_bins: int = 10,
     min_bin_size: float = 0.05
 ) -> WOEEncoder:

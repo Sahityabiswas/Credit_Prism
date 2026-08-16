@@ -1,28 +1,39 @@
 #!/usr/bin/env python
 """Credit Risk Intelligence System — End-to-end pipeline entry point."""
 
-import sys
 import os
-import yaml
-import pandas as pd
+import sys
+
 import numpy as np
+import pandas as pd
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
-from data_prep import load_config
-from data_ingestion import load_or_create_clean_data
-from encoding import fit_woe_encoder
-from feature_selection import select_features, calculate_iv
-from models import train_all_models, predict_proba
-from evaluate import evaluate_all, compare_models, evaluate_cv
-from decisioning import decision_metrics, threshold_analysis, find_optimal_threshold
-from expected_loss import el_with_assumptions
-from explain import generate_shap_explanations, save_global_shap_plot, save_local_shap_examples, compare_shap_with_logreg
-from monitoring import calculate_psi, generate_psi_report, save_psi_report
-from model_card import generate_model_card, generate_metrics_json, save_metrics_report, save_model_card
 import joblib
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import train_test_split
+
+from data_ingestion import load_or_create_clean_data
+from data_prep import load_config
+from decisioning import decision_metrics, find_optimal_threshold, threshold_analysis
+from encoding import fit_woe_encoder
+from evaluate import compare_models, evaluate_all
+from expected_loss import el_with_assumptions
+from explain import (
+    compare_shap_with_logreg,
+    generate_shap_explanations,
+    save_global_shap_plot,
+    save_local_shap_examples,
+)
+from feature_selection import select_features
+from model_card import (
+    generate_metrics_json,
+    generate_model_card,
+    save_metrics_report,
+    save_model_card,
+)
+from models import predict_proba
+from monitoring import calculate_psi, generate_psi_report, save_psi_report
 
 
 def main():
@@ -284,14 +295,14 @@ def main():
     
     print(f"\n{'='*60}")
     print("Pipeline complete!")
-    print(f"Artifacts saved to: artifacts/")
-    print(f"  - metrics_report.json (includes CV results)")
-    print(f"  - model_card.md (documents no true OOT limitation)")
-    print(f"  - decision_thresholds.csv")
-    print(f"  - monitoring/psi_report.json")
-    print(f"  - shap_plots/")
-    print(f"  - best_model.pkl")
-    print(f"  - woe_encoder.json")
+    print("Artifacts saved to: artifacts/")
+    print("  - metrics_report.json (includes CV results)")
+    print("  - model_card.md (documents no true OOT limitation)")
+    print("  - decision_thresholds.csv")
+    print("  - monitoring/psi_report.json")
+    print("  - shap_plots/")
+    print("  - best_model.pkl")
+    print("  - woe_encoder.json")
     print(f"{'='*60}")
 
 

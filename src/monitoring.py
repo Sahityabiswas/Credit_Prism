@@ -1,10 +1,11 @@
 """Population Stability Index (PSI) and drift monitoring."""
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Tuple, Optional
 import json
 import warnings
+
+import numpy as np
+import pandas as pd
+
 warnings.filterwarnings("ignore")
 
 
@@ -86,7 +87,7 @@ def calculate_psi_detailed(
     expected_scores: np.ndarray,
     actual_scores: np.ndarray,
     buckets: int = 10
-) -> Dict:
+) -> dict:
     """Calculate PSI with detailed bucket breakdown."""
     expected = np.asarray(expected_scores)
     actual = np.asarray(actual_scores)
@@ -142,7 +143,7 @@ def calculate_psi_detailed(
 def calculate_variable_psi(
     train_df: pd.DataFrame,
     oot_df: pd.DataFrame,
-    feature_cols: List[str],
+    feature_cols: list[str],
     buckets: int = 10
 ) -> pd.DataFrame:
     """Calculate PSI for multiple variables (features and scores)."""
@@ -173,9 +174,9 @@ def generate_psi_report(
     oot_scores: np.ndarray,
     train_df: pd.DataFrame = None,
     oot_df: pd.DataFrame = None,
-    feature_cols: List[str] = None,
+    feature_cols: list[str] = None,
     buckets: int = 10
-) -> Dict:
+) -> dict:
     """Generate comprehensive PSI report."""
     report = {
         "score_psi_test_vs_train": calculate_psi_detailed(train_scores, test_scores, buckets),
@@ -192,13 +193,13 @@ def generate_psi_report(
     return report
 
 
-def save_psi_report(report: Dict, path: str) -> None:
+def save_psi_report(report: dict, path: str) -> None:
     """Save PSI report to JSON."""
     with open(path, "w") as f:
         json.dump(report, f, indent=2, default=str)
 
 
-def load_psi_report(path: str) -> Dict:
+def load_psi_report(path: str) -> dict:
     """Load PSI report from JSON."""
-    with open(path, "r") as f:
+    with open(path) as f:
         return json.load(f)

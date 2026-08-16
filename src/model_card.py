@@ -1,25 +1,24 @@
 """Automated model card generation from pipeline outputs."""
 
 import json
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional
 from datetime import datetime
+
+import pandas as pd
 
 
 def generate_model_card(
     model_name: str,
     config: dict,
-    metrics_report: Dict,
-    oot_metrics: Dict,
+    metrics_report: dict,
+    oot_metrics: dict,
     psi_score: float,
     iv_table: pd.DataFrame,
-    selected_features: List[str],
-    shap_comparison: Optional[pd.DataFrame] = None,
-    decision_metrics: Optional[Dict] = None,
-    expected_loss_info: Optional[Dict] = None,
-    limitations: Optional[List[str]] = None,
-    cv_results: Optional[Dict] = None
+    selected_features: list[str],
+    shap_comparison: pd.DataFrame | None = None,
+    decision_metrics: dict | None = None,
+    expected_loss_info: dict | None = None,
+    limitations: list[str] | None = None,
+    cv_results: dict | None = None
 ) -> str:
     """Generate model card as Markdown string."""
     
@@ -43,18 +42,18 @@ def generate_model_card(
     lines.append("## 2. Target Definition")
     lines.append("")
     lines.append(f"- **Target:** {config.get('target', 'default')}")
-    lines.append(f"- **Definition:** Binary indicator (1 = default, 0 = non-default)")
-    lines.append(f"- **Observation window:** Defined by data source")
+    lines.append("- **Definition:** Binary indicator (1 = default, 0 = non-default)")
+    lines.append("- **Observation window:** Defined by data source")
     lines.append("")
     
     # Data
     lines.append("## 3. Data")
     lines.append("")
-    lines.append(f"- **Dataset:** Home Credit Default Risk (application_train)")
+    lines.append("- **Dataset:** Home Credit Default Risk (application_train)")
     lines.append(f"- **Rows:** {config.get('raw_path', 'N/A')}")
     lines.append(f"- **Target:** {config.get('target', 'TARGET')} (binary, ~8% default rate)")
     lines.append(f"- **Split strategy:** Stratified random split (test_size={config.get('test_size', 0.2)}) + {config.get('cv_folds', 5)}-fold CV")
-    lines.append(f"- **Critical limitation:** No true temporal ordering exists in Home Credit data. All temporal fields (DAYS_BIRTH, DAYS_EMPLOYED, etc.) are relative to the current application date. No calendar dates or true application timestamps exist. Therefore, true chronological/out-of-time validation is NOT possible.")
+    lines.append("- **Critical limitation:** No true temporal ordering exists in Home Credit data. All temporal fields (DAYS_BIRTH, DAYS_EMPLOYED, etc.) are relative to the current application date. No calendar dates or true application timestamps exist. Therefore, true chronological/out-of-time validation is NOT possible.")
     lines.append(f"- **Leakage checks:** {len(config.get('forbidden_columns', []))} forbidden columns excluded")
     lines.append("")
     
@@ -77,9 +76,9 @@ def generate_model_card(
     lines.append("## 5. Model")
     lines.append("")
     lines.append(f"- **Algorithm:** {model_name}")
-    lines.append(f"- **Framework:** scikit-learn / XGBoost")
-    lines.append(f"- **Calibration:** Isotonic regression (3-fold CV)")
-    lines.append(f"- **Class weighting:** Balanced")
+    lines.append("- **Framework:** scikit-learn / XGBoost")
+    lines.append("- **Calibration:** Isotonic regression (3-fold CV)")
+    lines.append("- **Class weighting:** Balanced")
     lines.append("")
     
     # Test Metrics
@@ -151,7 +150,7 @@ def generate_model_card(
         lines.append("")
         lines.append("| Predicted PD Bucket | Observed Default Rate | Sample Count |")
         lines.append("|---------------------|----------------------|--------------|")
-        for c, a, n in zip(bin_centers, bin_accuracies, bin_counts):
+        for c, a, n in zip(bin_centers, bin_accuracies, bin_counts, strict=False):
             lines.append(f"| {c:.2%} | {a:.2%} | {n} |")
         lines.append("")
     
@@ -159,7 +158,7 @@ def generate_model_card(
     lines.append("## 9. Population Stability (PSI)")
     lines.append("")
     lines.append(f"- **Test vs Train PSI:** {psi_score:.4f} ({'Stable' if psi_score < 0.1 else 'Moderate shift' if psi_score < 0.25 else 'Significant drift'})")
-    lines.append(f"- **Thresholds:** <0.10 stable, 0.10-0.25 moderate, >0.25 significant")
+    lines.append("- **Thresholds:** <0.10 stable, 0.10-0.25 moderate, >0.25 significant")
     lines.append("")
     
     # Decisioning
@@ -237,8 +236,8 @@ def generate_model_card(
     # Version
     lines.append("## 17. Version History")
     lines.append("")
-    lines.append(f"| Version | Date | Author | Notes |")
-    lines.append(f"|---------|------|--------|-------|")
+    lines.append("| Version | Date | Author | Notes |")
+    lines.append("|---------|------|--------|-------|")
     lines.append(f"| 1.0 | {datetime.now().strftime('%Y-%m-%d')} | Pipeline | Initial training (Option A: application_train only) |")
     lines.append("")
     
@@ -252,13 +251,13 @@ def save_model_card(content: str, path: str) -> None:
 
 
 def generate_metrics_json(
-    metrics_report: Dict,
-    oot_metrics: Dict,
+    metrics_report: dict,
+    oot_metrics: dict,
     psi_score: float,
-    decision_metrics: Optional[Dict] = None,
-    expected_loss_info: Optional[Dict] = None,
-    cv_results: Optional[Dict] = None
-) -> Dict:
+    decision_metrics: dict | None = None,
+    expected_loss_info: dict | None = None,
+    cv_results: dict | None = None
+) -> dict:
     """Generate structured metrics report as JSON."""
     return {
         "test_metrics": metrics_report,
@@ -271,7 +270,7 @@ def generate_metrics_json(
     }
 
 
-def save_metrics_report(report: Dict, path: str) -> None:
+def save_metrics_report(report: dict, path: str) -> None:
     """Save metrics report to JSON."""
     with open(path, "w") as f:
         json.dump(report, f, indent=2, default=str)

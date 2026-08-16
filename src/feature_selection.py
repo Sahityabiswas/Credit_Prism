@@ -1,15 +1,14 @@
 """Information Value (IV) calculation and feature selection utilities."""
 
-import pandas as pd
+
 import numpy as np
-from typing import List, Tuple, Optional, Union
-import warnings
+import pandas as pd
 
 
 def calculate_iv(
     df: pd.DataFrame,
-    target: Union[str, pd.Series],
-    feature_cols: Optional[List[str]] = None
+    target: str | pd.Series,
+    feature_cols: list[str] | None = None
 ) -> pd.DataFrame:
     """
     Calculate Information Value (IV) for each feature.
@@ -47,7 +46,7 @@ def calculate_iv(
         if feature not in df.columns:
             continue
         
-        series = df[feature]
+        df[feature]
         
         # Group by feature values (already binned/WOE-transformed or categorical)
         grouped = df.groupby(feature, observed=False)[target_name].agg(
@@ -81,7 +80,7 @@ def select_by_iv(
     iv_df: pd.DataFrame,
     iv_min: float = 0.02,
     iv_max: float = 0.5
-) -> List[str]:
+) -> list[str]:
     """Select features within IV range."""
     selected = iv_df[
         (iv_df["iv"] >= iv_min) & (iv_df["iv"] <= iv_max)
@@ -89,7 +88,7 @@ def select_by_iv(
     return selected
 
 
-def calculate_vif(df: pd.DataFrame, feature_cols: List[str]) -> pd.DataFrame:
+def calculate_vif(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame:
     """Calculate Variance Inflation Factor for each feature."""
     from sklearn.linear_model import LinearRegression
     
@@ -111,10 +110,7 @@ def calculate_vif(df: pd.DataFrame, feature_cols: List[str]) -> pd.DataFrame:
         reg = LinearRegression().fit(X, y)
         r2 = reg.score(X, y)
         
-        if r2 >= 1.0:
-            vif = np.inf
-        else:
-            vif = 1 / (1 - r2)
+        vif = np.inf if r2 >= 1.0 else 1 / (1 - r2)
         
         vif_data.append({"feature": feature, "vif": vif})
     
@@ -125,7 +121,7 @@ def prune_by_correlation(
     df: pd.DataFrame,
     threshold: float = 0.8,
     method: str = "pearson"
-) -> List[str]:
+) -> list[str]:
     """
     Remove highly correlated features, keeping the one with higher IV (if available).
     
@@ -150,10 +146,10 @@ def prune_by_correlation(
 
 def prune_by_vif(
     df: pd.DataFrame,
-    feature_cols: List[str],
+    feature_cols: list[str],
     vif_threshold: float = 10.0,
     max_iter: int = 10
-) -> List[str]:
+) -> list[str]:
     """Iteratively remove features with highest VIF until all below threshold."""
     remaining = feature_cols.copy()
     
@@ -178,7 +174,7 @@ def select_features(
     iv_max: float = 0.5,
     correlation_threshold: float = 0.8,
     vif_threshold: float = 10.0
-) -> Tuple[List[str], pd.DataFrame]:
+) -> tuple[list[str], pd.DataFrame]:
     """
     Full feature selection pipeline:
     1. Calculate IV
